@@ -1,0 +1,50 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.*'
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get release information
+        id: release_info
+        run: |
+          echo "::set-output name=author::${{ github.actor }}"
+          echo "::set-output name=date::${{ github.event.head_commit.timestamp }}"
+          echo "::set-output name=version::${{ github.ref }}"
+      - name: Create Release
+        uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.release_info.outputs.version }}
+          release_name: ${{ steps.release_info.outputs.version }}
+          draft: false
+          prerelease: false
+          files: ''
+  create_issue:
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Issue
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data } = await github.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'New Release',
+              body: `
+                Author: ${{ needs.create_release.outputs.author }}
+                Date: ${{ needs.create_release.outputs.date }}
+                Version: ${{ needs.create_release.outputs.version }}
+                Changelog: {changelog}
+              `,
+              labels: ['RELEASE']
+            });
+            console.log('Issue created:', data.html_url);
