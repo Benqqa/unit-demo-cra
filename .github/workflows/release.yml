@@ -1,9 +1,9 @@
 name: Release Workflow
-
+run-name: ${{ github.actor }} started Release
 on:
   push:
     tags:
-      - 'v[0-9]+.*'
+      - 'v.*'
 
 jobs:
   create_release:
