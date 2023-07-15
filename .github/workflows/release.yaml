@@ -16,7 +16,7 @@ jobs:
         run: |
           echo "::set-output name=author::${{ github.actor }}"
           echo "::set-output name=date::${{ github.event.head_commit.timestamp }}"
-          echo "::set-output name=version::${{ github.ref | replace('refs/tags/v', '') }}"
+          echo "::set-output name=version::${{ env.GITHUB_REF }} ! replace('refs/tags/v', '')"
       - name: Create Release
         uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
