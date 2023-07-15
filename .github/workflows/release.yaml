@@ -18,11 +18,15 @@ jobs:
           echo "::set-output name=date::${{ github.event.head_commit.timestamp }}"
           echo "::set-output name=version::${{ github.ref }}"
       - name: Create Release
-        uses: Roang-zero1/github-create-release-action@v3.0.1
+        uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
-          version_regex: '^v[0-9]+\.[0-9]+\.[0-9]+'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.release_info.outputs.version }}
+          release_name: ${{ steps.release_info.outputs.version }}
+          automatic_release_tag: v${{ steps.release_info.outputs.version | replace('refs/tags/v', '') }}
+          draft: false
+          prerelease: false
+          files: ''
   create_issue:
     needs: create_release
     runs-on: ubuntu-latest
