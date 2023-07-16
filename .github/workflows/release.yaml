@@ -12,7 +12,8 @@ jobs:
       - name: Check if tag exists
         id: check_tag
         run: |
-          tag_exists=$(git tag -l "${{ github.ref }}")
+          cd ${{ github.workspace }}
+          tag_exists=$(git tag -l "${{ github.ref_name }}")
           echo "::set-output name=tag_exists::${tag_exists}"
       
       - name: Create or update release
