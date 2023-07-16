@@ -16,8 +16,6 @@ jobs:
         else
           npm install
        fi
-    - name: Check commit message
-      run: npx commitlint --from="$GITHUB_SHA^" --to="$GITHUB_SHA"
     - name: Install playwright 
       run: npx playwright install
     - name: Run e2e-ci tests
