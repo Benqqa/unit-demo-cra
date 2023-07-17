@@ -9,9 +9,6 @@ export const Application: FC = () => {
   const about = <About />;
 
 
-
-
-
   
   return (
     <div>
