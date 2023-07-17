@@ -1,38 +1,34 @@
 name: Release Workflow
 run-name: ${{ github.actor }} started Release
+
 on:
   push:
     tags:
-      - 'v*'
+      - "v[0-9]*"
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
-  create_release:
+  create-issue:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check if tag exists
-        id: check_tag
-        run: |
-          cd ${{ github.workspace }}
-          tag_exists=$(git tag -l "${{ github.ref_name }}")
-          echo "::set-output name=tag_exists::${tag_exists}"
-      
-      - name: Create or update release
-        id: create_or_update_release
-        uses: avakar/tag-and-release@v1
+      - uses: actions/checkout@v3
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Get release URL
-        id: get_release_url
+      - name: set up environment
         run: |
-          echo "::set-output name=html_url::https://github.com/${{ github.repository }}/releases/tag/${{ github.ref }}"
+          echo "COMMIT_TIME=$(git show -s --format=%ci ${{ github.sha }})" >> $GITHUB_ENV
+          echo "COMMIT_BEFORE=${{github.event.before}}" >> $GITHUB_ENV
+          echo "COMMIT_AFTER=${{github.event.after}}" >> $GITHUB_ENV
 
-      - name: Get upload URL
-        id: get_upload_url
-        run: |
-          echo "::set-output name=upload_url::https://github.com/${{ github.repository }}/releases/${{ steps.create_or_update_release.outputs.id }}/assets"
+      - name: create release issue
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          script: |
+            const script = require('.github/workflows/scripts/release.js');
+            await script({ github, context, exec, TAG: "${{ github.ref_name }}" });
